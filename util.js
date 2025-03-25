@@ -27,7 +27,6 @@ export const simulateRequest = async () => {
   return {
     status: 'success',
     delay,
-    isSlowRequest,
     timestamp: new Date().toISOString()
   };
 };

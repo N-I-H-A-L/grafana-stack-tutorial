@@ -1,15 +1,15 @@
 import express from 'express';
 import { simulateRequest } from './util.js';
+import promClient from "prom-client";
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 app.use(express.json());
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'healthy' });
-});
+//It will start collecting the default metrics set my Prometheus for our server.
+const collectDefaultMetrics = promClient.collectDefaultMetrics;
+collectDefaultMetrics({ register: promClient.register });
 
 // Basic root endpoint
 app.get('/', (req, res) => {
@@ -27,6 +27,12 @@ app.get('/slow', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   }
+});
+
+app.get("/metrics", async (req, res) => {
+  res.setHeader("Content-Type", promClient.register.contentType);
+  const metrics = await promClient.register.metrics();
+  res.send(metrics);
 });
 
 app.listen(port, () => {
